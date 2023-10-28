@@ -1,0 +1,59 @@
+---
+title: 'Assignment #5'
+author: "YUQING ZHENG"
+date: "2023-10-28"
+output: html_document
+---
+```{r}
+library(fpp)
+library(fpp2)
+
+#import data
+AMZN <- read.csv("AMZN.csv")
+head(AMZN)
+str(AMZN)
+AMZN$Date <- as.Date(AMZN$Date)
+str(AMZN)
+
+adjc_ts <- ts(AMZN$Adj.Close,frequency=12,start=c(2018,01),end=c(2023,09))
+adjc_ts
+plot(adjc_ts)
+Acf(adjc_ts)
+
+stl_decomp <- stl(adjc_ts,s.window ="periodic")
+stl_decomp
+plot(stl_decomp)
+attributes(stl_decomp)
+stl_decomp$call
+stl_decomp$win
+stl_decomp$deg
+stl_decomp$jump
+
+#print out a seasonal adjustment
+seasadj(stl_decomp)
+#Plot a line on the graph
+plot(adjc_ts)
+lines(seasadj(stl_decomp), col="Red")
+#Default period forecast
+f_stl <- forecast(stl_decomp)
+#pass the # of period
+f_stl <- forecast(stl_decomp,h=10)
+f_stl
+plot(f_stl)
+Acf(f_stl$residuals)
+f_stl$method
+
+# There is more than one way to do things
+decomp_adjc <- decompose(adjc_ts)
+plot(decomp_adjc)
+# Each one shows different attributes 
+attributes(decomp_adjc)
+seasadj(decomp_adjc)
+f_decomp <- forecast(seasadj(decomp_adjc),h=12)
+f_stl <- forecast(seasadj(stl_decomp,h=12))
+accuracy(f_decomp)
+accuracy(f_stl)
+#I choose MAE as the accuracy measure, f_stl is more accurate.
+
+```
+
